@@ -3,65 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <title>预约系统</title>
+
+  <!-- Telegram 官方SDK（必须） -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     body {
       font-family: Arial;
       padding: 20px;
+      background: #f5f5f5;
+    }
+    h2 {
+      margin-bottom: 20px;
     }
     .card {
-      border: 1px solid #ddd;
+      background: white;
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     button {
-      float: right;
       background: #3390ec;
       color: white;
       border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    #result {
+      margin-top: 20px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
+
 <body>
 
 <h2>📅 可预约课程</h2>
 
 <div class="card">
-  单次 · 1000¥
+  <span>单次 · 1000¥</span>
   <button onclick="book('单次')">预约</button>
 </div>
 
 <div class="card">
-  两次 · 1600¥
+  <span>两次 · 1600¥</span>
   <button onclick="book('两次')">预约</button>
 </div>
 
 <div class="card">
-  包时 · 4000¥
+  <span>包时 · 4000¥</span>
   <button onclick="book('包时')">预约</button>
 </div>
 
 <div class="card">
-  包夜 · 5200¥
+  <span>包夜 · 5200¥</span>
   <button onclick="book('包夜')">预约</button>
 </div>
-
-<hr>
 
 <div id="result"></div>
 
 <script>
-const tg = window.Telegram?.WebApp;
+const tg = window.Telegram.WebApp;
 
+// 初始化
+tg.ready();
+
+// 点击预约
 function book(type) {
-  const user = tg?.initDataUnsafe?.user;
+  const user = tg.initDataUnsafe?.user;
+
+  if (!user) {
+    alert("❌ 没拿到用户信息，请在Telegram里打开");
+    return;
+  }
 
   document.getElementById("result").innerHTML = `
     <h3>预约成功 🎉</h3>
-    用户: ${user?.first_name || "未知"} <br>
-    课程: ${type}
+    <p>用户ID：${user.id}</p>
+    <p>用户名：${user.first_name}</p>
+    <p>预约课程：${type}</p>
   `;
 }
 </script>
