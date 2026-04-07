@@ -12,9 +12,12 @@
       padding: 20px;
       background: #f5f5f5;
     }
+    h2 {
+      margin-bottom: 10px;
+    }
     .card {
       background: white;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 15px;
       margin-bottom: 10px;
       display: flex;
@@ -28,11 +31,8 @@
       padding: 6px 12px;
       border-radius: 6px;
     }
-    #result {
+    #orders {
       margin-top: 20px;
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
     }
   </style>
 </head>
@@ -61,24 +61,20 @@
   <button onclick="book('包夜')">预约</button>
 </div>
 
-<div id="result"></div>
+<h2>📋 我的预约</h2>
+<div id="orders">加载中...</div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// ✅ 你的配置（已经帮你填好 URL）
-const SUPABASE_URL = "https://yflgpxchxryhjwwvvogl.supabase.co";
+// ✅ 你的配置（已经帮你填好 URL） 
+const SUPABASE_URL = "https://yflgpxchxryhjwwvvogl.supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmbGdweGNoeHJ5aGp3d3Z2b2dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODIyMDAsImV4cCI6MjA5MTE1ODIwMH0.WKFU27HoK8_KKMFO1h11XNEL2QOFtw-51lH4a4RrjkA";
 
+const user = tg.initDataUnsafe?.user;
+
 function book(type) {
-  const user = tg.initDataUnsafe?.user;
-
-  if (!user) {
-    alert("❌ 请在Telegram中打开");
-    return;
-  }
-
   fetch(SUPABASE_URL + "/rest/v1/orders", {
     method: "POST",
     headers: {
@@ -91,21 +87,43 @@ function book(type) {
       name: user.first_name,
       course: type
     })
-  })
-  .then(res => {
-    if (res.ok) {
-      document.getElementById("result").innerHTML = `
-        <h3>预约成功 🎉</h3>
-        <p>用户：${user.first_name}</p>
-        <p>课程：${type}</p>
-      `;
-    } else {
-      alert("❌ 保存失败（权限问题）");
+  }).then(() => {
+    loadOrders();
+  });
+}
+
+function loadOrders() {
+  fetch(SUPABASE_URL + "/rest/v1/orders?user_id=eq." + user.id, {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY
     }
   })
-  .catch(() => {
-    alert("❌ 网络错误");
+  .then(res => res.json())
+  .then(data => {
+    const box = document.getElementById("orders");
+
+    if (data.length === 0) {
+      box.innerHTML = "暂无预约";
+      return;
+    }
+
+    box.innerHTML = "";
+
+    data.forEach(item => {
+      box.innerHTML += `
+        <div class="card">
+          <span>${item.course}</span>
+          <span>已预约</span>
+        </div>
+      `;
+    });
   });
+}
+
+// 页面加载时获取订单
+if (user) {
+  loadOrders();
 }
 </script>
 
