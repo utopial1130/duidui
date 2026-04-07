@@ -1,68 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>预约系统</title>
+<meta charset="UTF-8">
+<title>预约系统</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    h2 {
-      margin-bottom: 10px;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    button {
-      background: #3390ec;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    #orders {
-      margin-top: 20px;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial;
+  background: #f2f2f2;
+  padding: 15px;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+button {
+  background: #3390ec;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.disabled {
+  background: gray;
+}
+
+.section {
+  margin-top: 20px;
+}
+</style>
 </head>
 
 <body>
 
 <h2>📅 可预约课程</h2>
 
-<div class="card">
-  <span>单次 · 1000¥</span>
-  <button onclick="book('单次')">预约</button>
-</div>
+<div id="courseList"></div>
 
-<div class="card">
-  <span>两次 · 1600¥</span>
-  <button onclick="book('两次')">预约</button>
+<div class="section">
+  <h2>📋 我的预约</h2>
+  <div id="orders">加载中...</div>
 </div>
-
-<div class="card">
-  <span>包时 · 4000¥</span>
-  <button onclick="book('包时')">预约</button>
-</div>
-
-<div class="card">
-  <span>包夜 · 5200¥</span>
-  <button onclick="book('包夜')">预约</button>
-</div>
-
-<h2>📋 我的预约</h2>
-<div id="orders">加载中...</div>
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -74,7 +66,39 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const user = tg.initDataUnsafe?.user;
 
+const courses = [
+  {name: "单次", price: "1000¥"},
+  {name: "两次", price: "1600¥"},
+  {name: "包时", price: "4000¥"},
+  {name: "包夜", price: "5200¥"}
+];
+
+let hasOrder = false;
+
+// 渲染课程
+function renderCourses() {
+  const box = document.getElementById("courseList");
+  box.innerHTML = "";
+
+  courses.forEach(c => {
+    box.innerHTML += `
+      <div class="card">
+        <span>${c.name} · ${c.price}</span>
+        <button onclick="book('${c.name}')" ${hasOrder ? "class='disabled'" : ""}>
+          ${hasOrder ? "已预约" : "预约"}
+        </button>
+      </div>
+    `;
+  });
+}
+
+// 预约（防重复）
 function book(type) {
+  if (hasOrder) {
+    alert("❌ 你已经预约过了");
+    return;
+  }
+
   fetch(SUPABASE_URL + "/rest/v1/orders", {
     method: "POST",
     headers: {
@@ -92,6 +116,7 @@ function book(type) {
   });
 }
 
+// 加载订单
 function loadOrders() {
   fetch(SUPABASE_URL + "/rest/v1/orders?user_id=eq." + user.id, {
     headers: {
@@ -104,24 +129,27 @@ function loadOrders() {
     const box = document.getElementById("orders");
 
     if (data.length === 0) {
+      hasOrder = false;
       box.innerHTML = "暂无预约";
-      return;
+    } else {
+      hasOrder = true;
+
+      box.innerHTML = "";
+      data.forEach(item => {
+        box.innerHTML += `
+          <div class="card">
+            <span>${item.course}</span>
+            <span>进行中</span>
+          </div>
+        `;
+      });
     }
 
-    box.innerHTML = "";
-
-    data.forEach(item => {
-      box.innerHTML += `
-        <div class="card">
-          <span>${item.course}</span>
-          <span>已预约</span>
-        </div>
-      `;
-    });
+    renderCourses(); // 更新按钮状态
   });
 }
 
-// 页面加载时获取订单
+// 初始化
 if (user) {
   loadOrders();
 }
