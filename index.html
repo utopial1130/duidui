@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>预约系统</title>
 
-  <!-- Telegram 官方SDK（必须） -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -12,9 +11,6 @@
       font-family: Arial;
       padding: 20px;
       background: #f5f5f5;
-    }
-    h2 {
-      margin-bottom: 20px;
     }
     .card {
       background: white;
@@ -69,25 +65,47 @@
 
 <script>
 const tg = window.Telegram.WebApp;
-
-// 初始化
 tg.ready();
 
-// 点击预约
+// ✅ 你的配置（已经帮你填好 URL）
+const SUPABASE_URL = "https://yflgpxchxryhjwwwvogI.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Tz8fJFXdmWFWvaJ0jJgWYQ_q5pO8mrt";
+
 function book(type) {
   const user = tg.initDataUnsafe?.user;
 
   if (!user) {
-    alert("❌ 没拿到用户信息，请在Telegram里打开");
+    alert("❌ 请在Telegram中打开");
     return;
   }
 
-  document.getElementById("result").innerHTML = `
-    <h3>预约成功 🎉</h3>
-    <p>用户ID：${user.id}</p>
-    <p>用户名：${user.first_name}</p>
-    <p>预约课程：${type}</p>
-  `;
+  fetch(SUPABASE_URL + "/rest/v1/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY
+    },
+    body: JSON.stringify({
+      user_id: String(user.id),
+      name: user.first_name,
+      course: type
+    })
+  })
+  .then(res => {
+    if (res.ok) {
+      document.getElementById("result").innerHTML = `
+        <h3>预约成功 🎉</h3>
+        <p>用户：${user.first_name}</p>
+        <p>课程：${type}</p>
+      `;
+    } else {
+      alert("❌ 保存失败（权限问题）");
+    }
+  })
+  .catch(() => {
+    alert("❌ 网络错误");
+  });
 }
 </script>
 
