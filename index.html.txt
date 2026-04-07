@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>提问</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg1: #fff7fb;
+      --bg2: #ffe7f1;
+      --card: rgba(255, 255, 255, 0.88);
+      --text: #2d1f2a;
+      --subtext: #7c6573;
+      --primary: #ff6fa9;
+      --primary-dark: #f25595;
+      --line: rgba(255, 111, 169, 0.16);
+      --shadow: 0 14px 40px rgba(255, 111, 169, 0.14);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fff 0%, #fff7fb 36%, transparent 55%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+    }
+
+    body {
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 18px)
+        16px
+        calc(env(safe-area-inset-bottom, 0px) + 20px);
+    }
+
+    .wrap {
+      max-width: 460px;
+      margin: 0 auto;
+      min-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hero {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      padding: 22px 18px 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #a85f7f;
+      background: #fff0f6;
+      border: 1px solid #ffd6e7;
+      border-radius: 999px;
+      padding: 6px 10px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .desc {
+      margin: 10px 0 0;
+      color: var(--subtext);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.76);
+      backdrop-filter: blur(10px);
+    }
+
+    .label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 128px;
+      resize: none;
+      border: 1px solid var(--line);
+      outline: none;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      background: rgba(255,255,255,0.92);
+      transition: 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(255, 111, 169, 0.45);
+      box-shadow: 0 0 0 4px rgba(255, 111, 169, 0.10);
+    }
+
+    .tips {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--subtext);
+    }
+
+    .quick-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .chip {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.85);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.4;
+      cursor: pointer;
+      border: 1px solid rgba(255, 111, 169, 0.10);
+      box-shadow: 0 6px 16px rgba(255, 111, 169, 0.06);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .chip:active {
+      transform: scale(0.98);
+    }
+
+    .bottom {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .submit {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      box-shadow: 0 10px 24px rgba(242, 85, 149, 0.28);
+    }
+
+    .submit:active {
+      transform: translateY(1px);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--subtext);
+      min-height: 18px;
+    }
+
+    @media (max-width: 380px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badge">💗 Mini App</div>
+      <h1>提问</h1>
+      <p class="desc">
+        有什么不懂的都可以问我。输入你的问题，或者点下面的快捷问题试试。
+      </p >
+    </section>
+
+    <section class="card">
+      <label class="label" for="question">输入你的问题</label>
+      <textarea id="question" placeholder="例如：帮我写一段文案 / 今天吃什么 / 帮我做计划"></textarea>
+      <div class="tips">支持自由输入，也可以使用下方快捷提问。</div>
+    </section>
+
+    <section class="card">
+      <p class="quick-title">快捷提问</p >
+      <div class="quick-grid">
+        <button class="chip" type="button" data-text="帮我写一段适合发朋友圈的文案">帮我写文案</button>
+        <button class="chip" type="button" data-text="今天不知道吃什么，帮我推荐一下">今天吃什么</button>
+        <button class="chip" type="button" data-text="帮我安排一个简单可执行的今日计划">帮我做计划</button>
+        <button class="chip" type="button" data-text="我现在很迷茫，帮我理一理思路">帮我理思路</button>
+      </div>
+    </section>
+
+    <div class="bottom">
+      <button class="submit" id="submitBtn" type="button">提交问题</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    const textarea = document.getElementById("question");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusEl = document.getElementById("status");
+    const chips = document.querySelectorAll(".chip");
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+
+      try {
+        tg.setHeaderColor("#ffe7f1");
+        tg.setBackgroundColor("#fff7fb");
+      } catch (e) {}
+
+      const user = tg.initDataUnsafe?.user;
+      if (user?.first_name) {
+        statusEl.textContent = `你好，${user.first_name}`;
+      } else {
+        statusEl.textContent = "欢迎使用提问";
+      }
+    } else {
+      statusEl.textContent = "当前是普通浏览器预览模式";
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        textarea.value = chip.dataset.text || "";
+        textarea.focus();
+      });
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const text = textarea.value.trim();
+
+      if (!text) {
+        statusEl.textContent = "先输入一个问题吧";
+        textarea.focus();
+        return;
+      }
+
+      const payload = {
+        type: "question_submit",
+        text,
+        time: Date.now()
+      };
+
+      if (tg) {
+        tg.sendData(JSON.stringify(payload));
+        statusEl.textContent = "已发送给机器人";
+      } else {
+        statusEl.textContent = "预览模式：这里会把问题发送给 Telegram Bot";
+        console.log("sendData:", payload);
+      }
+    });
+  </script>
+</body>
+</html>
